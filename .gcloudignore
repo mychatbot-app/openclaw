@@ -1,0 +1,24 @@
+# Override .gitignore for Cloud Build context
+# We need pnpm-lock.yaml and other build files that .gitignore excludes
+
+.git
+node_modules
+.bun-cache
+.bun
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mp4
+*.mov
+*.wav
+*.mp3
+coverage
+*.log
+.DS_Store
+.pnpm-store
+
+# Explicitly include files that .gitignore excludes but Docker build needs
+!pnpm-lock.yaml
+!bun.lock
