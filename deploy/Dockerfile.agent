@@ -27,6 +27,9 @@ RUN mkdir -p /mnt/gcs && \
     chown -R node:node /mnt/gcs && \
     chown -R node:node /app
 
+# Bundle MyChatBot skills
+COPY deploy/skills /opt/openclaw-skills
+
 # Entrypoint
 COPY deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
