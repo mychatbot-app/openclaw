@@ -23,10 +23,8 @@ ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:build
 
 ENV NODE_ENV=production
-ENV OPENCLAW_STATE_DIR=/home/node/.openclaw
-
-RUN mkdir -p /home/node/.openclaw/workspace && \
-    chown -R node:node /home/node/.openclaw && \
+RUN mkdir -p /mnt/gcs && \
+    chown -R node:node /mnt/gcs && \
     chown -R node:node /app
 
 # Entrypoint
