@@ -17,9 +17,10 @@ mkdir -p "$OPENCLAW_DIR" "$WORKSPACE_DIR"
 
 # Symlink ~/.openclaw → state dir so OpenClaw finds its config
 HOME_OPENCLAW="/home/node/.openclaw"
-if [ "$OPENCLAW_DIR" != "$HOME_OPENCLAW" ] && [ ! -e "$HOME_OPENCLAW" ]; then
+if [ "$OPENCLAW_DIR" != "$HOME_OPENCLAW" ]; then
+  rm -rf "$HOME_OPENCLAW" 2>/dev/null || true
   mkdir -p "$(dirname "$HOME_OPENCLAW")"
-  ln -s "$OPENCLAW_DIR" "$HOME_OPENCLAW"
+  ln -sf "$OPENCLAW_DIR" "$HOME_OPENCLAW"
   echo "[entrypoint] Symlinked $HOME_OPENCLAW → $OPENCLAW_DIR"
 fi
 
