@@ -619,7 +619,7 @@ async function saveSessionStoreUnlocked(
     await fs.promises.writeFile(tmp, json, { mode: 0o600, encoding: "utf-8" });
     await fs.promises.rename(tmp, storePath);
     // Ensure permissions are set even if rename loses them
-    await fs.promises.chmod(storePath, 0o600);
+    await fs.promises.chmod(storePath, 0o600).catch(() => {/* best-effort for GCS FUSE */});
   } catch (err) {
     const code =
       err && typeof err === "object" && "code" in err
@@ -632,7 +632,7 @@ async function saveSessionStoreUnlocked(
       try {
         await fs.promises.mkdir(path.dirname(storePath), { recursive: true });
         await fs.promises.writeFile(storePath, json, { mode: 0o600, encoding: "utf-8" });
-        await fs.promises.chmod(storePath, 0o600);
+        await fs.promises.chmod(storePath, 0o600).catch(() => {/* best-effort for GCS FUSE */});
       } catch (err2) {
         const code2 =
           err2 && typeof err2 === "object" && "code" in err2
