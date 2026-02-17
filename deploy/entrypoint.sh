@@ -15,6 +15,14 @@ echo "[entrypoint] State dir: $OPENCLAW_DIR"
 # Ensure directories exist
 mkdir -p "$OPENCLAW_DIR" "$WORKSPACE_DIR"
 
+# Symlink ~/.openclaw → state dir so OpenClaw finds its config
+HOME_OPENCLAW="/home/node/.openclaw"
+if [ "$OPENCLAW_DIR" != "$HOME_OPENCLAW" ] && [ ! -e "$HOME_OPENCLAW" ]; then
+  mkdir -p "$(dirname "$HOME_OPENCLAW")"
+  ln -s "$OPENCLAW_DIR" "$HOME_OPENCLAW"
+  echo "[entrypoint] Symlinked $HOME_OPENCLAW → $OPENCLAW_DIR"
+fi
+
 # Generate config on first boot only
 if [ ! -f "$CONFIG_FILE" ]; then
   echo "[entrypoint] First boot — generating openclaw.json"

@@ -9,16 +9,12 @@ steps:
       - 'deploy/Dockerfile.agent'
       - '-t'
       - 'gcr.io/$PROJECT_ID/openclaw-agent:latest'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/openclaw-agent:$SHORT_SHA'
       - '.'
 
 images:
   - 'gcr.io/$PROJECT_ID/openclaw-agent:latest'
-  - 'gcr.io/$PROJECT_ID/openclaw-agent:$SHORT_SHA'
 
 options:
-  machineType: 'E2_HIGHCPU_8'
   logging: CLOUD_LOGGING_ONLY
 
 timeout: '1200s'

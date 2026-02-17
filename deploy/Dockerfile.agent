@@ -1,13 +1,8 @@
 # MyChatBot OpenClaw Agent Image
-# Based on the upstream OpenClaw Dockerfile with:
-# - Bootstrap entrypoint for env-based config generation
-# - Bind 0.0.0.0 (Cloud Run requirement)
-# - CORS for app.mychatbot.app
-# - Pre-loaded skills (future)
+# Minimal additions on top of upstream Dockerfile pattern.
 
 FROM node:22-bookworm
 
-# Install Bun (required for build scripts)
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
 
@@ -15,7 +10,6 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy dependency files first for better layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY ui/package.json ./ui/package.json
 COPY patches ./patches
@@ -23,33 +17,22 @@ COPY scripts ./scripts
 
 RUN pnpm install --frozen-lockfile
 
-# Copy source and build
 COPY . .
 RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:build
 
 ENV NODE_ENV=production
-
-# Set default state dir (will be overridden by GCS mount in Cloud Run)
 ENV OPENCLAW_STATE_DIR=/home/node/.openclaw
 
-# Create state directories with correct ownership
 RUN mkdir -p /home/node/.openclaw/workspace && \
-    chown -R node:node /home/node/.openclaw
+    chown -R node:node /home/node/.openclaw && \
+    chown -R node:node /app
 
-# Allow non-root user to write
-RUN chown -R node:node /app
-
-# Copy entrypoint
+# Entrypoint
 COPY deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# Security: run as non-root
 USER node
-
-# Cloud Run sends traffic to $PORT (default 8080), but we use 18789.
-# The backend knows to talk to port 18789.
 EXPOSE 18789
-
 ENTRYPOINT ["/app/entrypoint.sh"]
