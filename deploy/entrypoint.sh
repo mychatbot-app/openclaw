@@ -108,6 +108,26 @@ process.stdout.write(JSON.stringify(d));
   echo "$AUTH_PROFILES" > "$AUTH_FILE"
   echo "[entrypoint] Auth profiles written to $AUTH_FILE"
 
+  # Install skills with account-specific config
+  SKILLS_DIR="$WORKSPACE_DIR/skills"
+  mkdir -p "$SKILLS_DIR"
+
+  # Copy bundled skills and substitute env vars
+  if [ -d "/opt/openclaw-skills" ]; then
+    for skill_dir in /opt/openclaw-skills/*/; do
+      skill_name=$(basename "$skill_dir")
+      target_dir="$SKILLS_DIR/$skill_name"
+      mkdir -p "$target_dir"
+      for f in "$skill_dir"*; do
+        [ -f "$f" ] || continue
+        # Substitute env vars in skill files
+        MCB_MCP_URL="${MCB_MCP_BASE_URL:-https://api.mychatbot.app}/api/mcp/sales-management?account_id=${MCB_ACCOUNT_ID:-unknown}"
+        sed "s|\${MCB_ACCOUNT_ID}|${MCB_ACCOUNT_ID:-unknown}|g; s|\${MCB_MCP_URL}|${MCB_MCP_URL}|g" "$f" > "$target_dir/$(basename "$f")"
+      done
+      echo "[entrypoint] Installed skill: $skill_name"
+    done
+  fi
+
   # Create default workspace files
   if [ ! -f "$WORKSPACE_DIR/SOUL.md" ]; then
     cat > "$WORKSPACE_DIR/SOUL.md" << 'SOULEOF'
