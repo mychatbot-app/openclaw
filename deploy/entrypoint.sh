@@ -81,6 +81,33 @@ JSONEOF
 
   echo "[entrypoint] Config written to $CONFIG_FILE"
 
+  # Write auth-profiles.json with API keys
+  AGENT_DIR="$OPENCLAW_DIR/agents/main/agent"
+  mkdir -p "$AGENT_DIR"
+  AUTH_FILE="$AGENT_DIR/auth-profiles.json"
+
+  AUTH_PROFILES='{"version":1,"profiles":{},"lastGood":{}}'
+  if [ -n "$OPENROUTER_API_KEY" ]; then
+    AUTH_PROFILES=$(echo "$AUTH_PROFILES" | node -e "
+const fs = require('fs');
+const d = JSON.parse(fs.readFileSync('/dev/stdin','utf8'));
+d.profiles['openrouter:default'] = {provider:'openrouter',type:'api_key',key:'$OPENROUTER_API_KEY'};
+d.lastGood['openrouter'] = 'openrouter:default';
+process.stdout.write(JSON.stringify(d));
+")
+  fi
+  if [ -n "$OPENAI_API_KEY" ]; then
+    AUTH_PROFILES=$(echo "$AUTH_PROFILES" | node -e "
+const fs = require('fs');
+const d = JSON.parse(fs.readFileSync('/dev/stdin','utf8'));
+d.profiles['openai:default'] = {provider:'openai',type:'api_key',key:'$OPENAI_API_KEY'};
+d.lastGood['openai'] = 'openai:default';
+process.stdout.write(JSON.stringify(d));
+")
+  fi
+  echo "$AUTH_PROFILES" > "$AUTH_FILE"
+  echo "[entrypoint] Auth profiles written to $AUTH_FILE"
+
   # Create default workspace files
   if [ ! -f "$WORKSPACE_DIR/SOUL.md" ]; then
     cat > "$WORKSPACE_DIR/SOUL.md" << 'SOULEOF'
@@ -120,6 +147,21 @@ cfg.gateway.http.endpoints.chatCompletions.enabled = true;
 fs.writeFileSync('$CONFIG_FILE', JSON.stringify(cfg, null, 2));
 console.log('[entrypoint] Updated token and enabled chatCompletions');
 " || echo "[entrypoint] Warning: failed to update config"
+  fi
+
+  # Always update auth-profiles with API keys from env (in case keys rotated)
+  AGENT_DIR="$OPENCLAW_DIR/agents/main/agent"
+  mkdir -p "$AGENT_DIR"
+  AUTH_FILE="$AGENT_DIR/auth-profiles.json"
+  if [ -n "${OPENROUTER_API_KEY:-}" ] && [ -f "$AUTH_FILE" ]; then
+    node -e "
+const fs = require('fs');
+const d = JSON.parse(fs.readFileSync('$AUTH_FILE','utf8'));
+d.profiles['openrouter:default'] = {provider:'openrouter',type:'api_key',key:'${OPENROUTER_API_KEY}'};
+d.lastGood['openrouter'] = 'openrouter:default';
+fs.writeFileSync('$AUTH_FILE', JSON.stringify(d, null, 2));
+console.log('[entrypoint] Updated OpenRouter key in auth-profiles');
+" || echo "[entrypoint] Warning: failed to update auth-profiles"
   fi
 fi
 
