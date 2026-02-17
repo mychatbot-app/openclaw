@@ -64,8 +64,9 @@ if [ ! -f "$CONFIG_FILE" ]; then
   },
   "agents": {
     "defaults": {
-      "model": "openrouter/anthropic/claude-sonnet-4",
-      "thinking": "off"
+      "model": {
+        "primary": "openrouter/anthropic/claude-sonnet-4"
+      }
     }
   }
 }
