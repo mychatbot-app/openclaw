@@ -60,6 +60,13 @@ if [ ! -f "$CONFIG_FILE" ]; then
     "controlUi": {
       "allowedOrigins": ["$MCB_CORS_ORIGIN"],
       "allowInsecureAuth": false
+    },
+    "http": {
+      "endpoints": {
+        "chatCompletions": {
+          "enabled": true
+        }
+      }
     }
   },
   "agents": {
@@ -96,7 +103,24 @@ MEMEOF
   fi
 
 else
-  echo "[entrypoint] Existing config found, using it"
+  echo "[entrypoint] Existing config found, updating token + endpoints"
+  # Always update the gateway token from env (re-deploy generates new tokens)
+  if [ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]; then
+    node -e "
+const fs = require('fs');
+const cfg = JSON.parse(fs.readFileSync('$CONFIG_FILE', 'utf8'));
+if (!cfg.gateway) cfg.gateway = {};
+if (!cfg.gateway.auth) cfg.gateway.auth = {};
+cfg.gateway.auth.mode = 'token';
+cfg.gateway.auth.token = '$OPENCLAW_GATEWAY_TOKEN';
+if (!cfg.gateway.http) cfg.gateway.http = {};
+if (!cfg.gateway.http.endpoints) cfg.gateway.http.endpoints = {};
+if (!cfg.gateway.http.endpoints.chatCompletions) cfg.gateway.http.endpoints.chatCompletions = {};
+cfg.gateway.http.endpoints.chatCompletions.enabled = true;
+fs.writeFileSync('$CONFIG_FILE', JSON.stringify(cfg, null, 2));
+console.log('[entrypoint] Updated token and enabled chatCompletions');
+" || echo "[entrypoint] Warning: failed to update config"
+  fi
 fi
 
 echo "[entrypoint] Starting OpenClaw gateway..."
