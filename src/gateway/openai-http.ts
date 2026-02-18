@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createDefaultDeps } from "../cli/deps.js";
 import { agentCommand } from "../commands/agent.js";
+import type { ImageContent } from "../commands/agent/types.js";
 import { emitAgentEvent, onAgentEvent } from "../infra/agent-events.js";
 import { logWarn } from "../logger.js";
 import { defaultRuntime } from "../runtime.js";
@@ -75,14 +76,45 @@ function extractTextContent(content: unknown): string {
   return "";
 }
 
+function extractImagesFromContent(content: unknown): ImageContent[] {
+  if (!Array.isArray(content)) {
+    return [];
+  }
+  const images: ImageContent[] = [];
+  for (const part of content) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+    const type = (part as { type?: unknown }).type;
+    if (type === "image_url") {
+      const imageUrl = (part as { image_url?: { url?: string } }).image_url;
+      const url = imageUrl?.url;
+      if (typeof url === "string" && url.startsWith("data:")) {
+        // Parse data URL: data:image/png;base64,...
+        const match = /^data:([^;]+);base64,(.+)$/.exec(url);
+        if (match) {
+          images.push({
+            type: "image",
+            mimeType: match[1],
+            data: match[2],
+          });
+        }
+      }
+    }
+  }
+  return images;
+}
+
 function buildAgentPrompt(messagesUnknown: unknown): {
   message: string;
   extraSystemPrompt?: string;
+  images?: ImageContent[];
 } {
   const messages = asMessages(messagesUnknown);
 
   const systemParts: string[] = [];
   const conversationEntries: ConversationEntry[] = [];
+  let collectedImages: ImageContent[] = [];
 
   for (const msg of messages) {
     if (!msg || typeof msg !== "object") {
@@ -90,16 +122,31 @@ function buildAgentPrompt(messagesUnknown: unknown): {
     }
     const role = typeof msg.role === "string" ? msg.role.trim() : "";
     const content = extractTextContent(msg.content).trim();
-    if (!role || !content) {
+
+    // Extract images from user messages with multimodal content
+    if (role === "user" && Array.isArray(msg.content)) {
+      const images = extractImagesFromContent(msg.content);
+      if (images.length > 0) {
+        collectedImages = collectedImages.concat(images);
+      }
+    }
+
+    if (!role || (!content && collectedImages.length === 0)) {
       continue;
     }
     if (role === "system" || role === "developer") {
-      systemParts.push(content);
+      if (content) systemParts.push(content);
       continue;
     }
 
     const normalizedRole = role === "function" ? "tool" : role;
     if (normalizedRole !== "user" && normalizedRole !== "assistant" && normalizedRole !== "tool") {
+      continue;
+    }
+
+    // Allow user messages with images even if text content is empty
+    const body = content || (normalizedRole === "user" && collectedImages.length > 0 ? "[image]" : "");
+    if (!body) {
       continue;
     }
 
@@ -115,7 +162,7 @@ function buildAgentPrompt(messagesUnknown: unknown): {
 
     conversationEntries.push({
       role: normalizedRole,
-      entry: { sender, body: content },
+      entry: { sender, body },
     });
   }
 
@@ -124,6 +171,7 @@ function buildAgentPrompt(messagesUnknown: unknown): {
   return {
     message,
     extraSystemPrompt: systemParts.length > 0 ? systemParts.join("\n\n") : undefined,
+    images: collectedImages.length > 0 ? collectedImages : undefined,
   };
 }
 
@@ -201,6 +249,7 @@ export async function handleOpenAiHttpRequest(
         {
           message: prompt.message,
           extraSystemPrompt: prompt.extraSystemPrompt,
+          images: prompt.images,
           sessionKey,
           runId,
           deliver: false,
@@ -306,6 +355,7 @@ export async function handleOpenAiHttpRequest(
         {
           message: prompt.message,
           extraSystemPrompt: prompt.extraSystemPrompt,
+          images: prompt.images,
           sessionKey,
           runId,
           deliver: false,
