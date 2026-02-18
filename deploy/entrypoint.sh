@@ -59,7 +59,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     },
     "controlUi": {
       "allowedOrigins": ["$MCB_CORS_ORIGIN"],
-      "allowInsecureAuth": false
+      "allowInsecureAuth": true
     },
     "http": {
       "endpoints": {
