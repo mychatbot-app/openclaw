@@ -77,7 +77,15 @@ if [ ! -f "$CONFIG_FILE" ]; then
       "model": {
         "primary": "openrouter/anthropic/claude-sonnet-4.6"
       }
-    }
+    },
+    "list": [
+      {
+        "id": "main",
+        "identity": {
+          "name": "Agent"
+        }
+      }
+    ]
   },
   "tools": {
     "web": {
