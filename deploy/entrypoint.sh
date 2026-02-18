@@ -164,8 +164,10 @@ if (!cfg.gateway.http) cfg.gateway.http = {};
 if (!cfg.gateway.http.endpoints) cfg.gateway.http.endpoints = {};
 if (!cfg.gateway.http.endpoints.chatCompletions) cfg.gateway.http.endpoints.chatCompletions = {};
 cfg.gateway.http.endpoints.chatCompletions.enabled = true;
+if (!cfg.gateway.controlUi) cfg.gateway.controlUi = {};
+cfg.gateway.controlUi.allowInsecureAuth = true;
 fs.writeFileSync('$CONFIG_FILE', JSON.stringify(cfg, null, 2));
-console.log('[entrypoint] Updated token and enabled chatCompletions');
+console.log('[entrypoint] Updated token, chatCompletions, and allowInsecureAuth');
 " || echo "[entrypoint] Warning: failed to update config"
   fi
 
