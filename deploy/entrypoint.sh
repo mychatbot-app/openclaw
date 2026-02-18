@@ -24,6 +24,9 @@ if [ "$OPENCLAW_DIR" != "$HOME_OPENCLAW" ]; then
   echo "[entrypoint] Symlinked $HOME_OPENCLAW → $OPENCLAW_DIR"
 fi
 
+# Skip device auth for internal tool calls (Cloud Run has no persistent device identity)
+export OPENCLAW_SKIP_DEVICE_AUTH=1
+
 # Generate config on first boot only
 if [ ! -f "$CONFIG_FILE" ]; then
   echo "[entrypoint] First boot — generating openclaw.json"

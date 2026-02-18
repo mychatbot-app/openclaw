@@ -349,7 +349,7 @@ async function executeGatewayRequestWithScopes<T>(params: {
       mode: opts.mode ?? GATEWAY_CLIENT_MODES.CLI,
       role: "operator",
       scopes,
-      deviceIdentity: loadOrCreateDeviceIdentity(),
+      deviceIdentity: process.env.OPENCLAW_SKIP_DEVICE_AUTH === "1" ? undefined : loadOrCreateDeviceIdentity(),
       minProtocol: opts.minProtocol ?? PROTOCOL_VERSION,
       maxProtocol: opts.maxProtocol ?? PROTOCOL_VERSION,
       onHelloOk: async () => {
