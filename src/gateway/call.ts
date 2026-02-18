@@ -868,7 +868,8 @@ async function executeGatewayRequestWithScopes<T>(params: {
       mode: opts.mode ?? GATEWAY_CLIENT_MODES.CLI,
       role: "operator",
       scopes,
-      deviceIdentity: shouldAttachDeviceIdentityForGatewayCall({ url, token, password })
+      deviceIdentity: process.env.OPENCLAW_SKIP_DEVICE_AUTH === "1" ? undefined
+        : shouldAttachDeviceIdentityForGatewayCall({ url, token, password })
         ? loadOrCreateDeviceIdentity()
         : undefined,
       minProtocol: opts.minProtocol ?? PROTOCOL_VERSION,
