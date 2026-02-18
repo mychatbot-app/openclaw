@@ -213,7 +213,7 @@ export async function handleOpenAiHttpRequest(
     trustedProxies: opts.trustedProxies,
     allowRealIpFallback: opts.allowRealIpFallback,
     rateLimiter: opts.rateLimiter,
-    maxBodyBytes: opts.maxBodyBytes ?? 1024 * 1024,
+    maxBodyBytes: opts.maxBodyBytes ?? 10 * 1024 * 1024,
   });
   if (handled === false) {
     return false;
