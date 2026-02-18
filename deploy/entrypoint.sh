@@ -40,7 +40,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
   # Build model providers based on available keys
   MODELS_JSON=""
   if [ -n "$OPENROUTER_API_KEY" ]; then
-    MODELS_JSON='"openrouter/anthropic/claude-sonnet-4": { "label": "Claude Sonnet 4" }'
+    MODELS_JSON='"openrouter/anthropic/claude-sonnet-4.6": { "label": "Claude Sonnet 4.6" }'
   fi
   if [ -n "$OPENAI_API_KEY" ]; then
     if [ -n "$MODELS_JSON" ]; then
@@ -72,7 +72,17 @@ if [ ! -f "$CONFIG_FILE" ]; then
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openrouter/anthropic/claude-sonnet-4"
+        "primary": "openrouter/anthropic/claude-sonnet-4.6"
+      }
+    }
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "provider": "perplexity",
+        "perplexity": {
+          "model": "perplexity/sonar"
+        }
       }
     }
   }
