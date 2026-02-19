@@ -176,7 +176,7 @@ export class GatewayClient {
     this.opts = {
       ...opts,
       deviceIdentity:
-        opts.deviceIdentity === null
+        opts.deviceIdentity === null || process.env.OPENCLAW_SKIP_DEVICE_AUTH === "1"
           ? undefined
           : (opts.deviceIdentity ?? loadOrCreateDeviceIdentity()),
     };
