@@ -68,7 +68,7 @@ export async function writeTelegramUpdateOffset(params: {
 }): Promise<void> {
   const filePath = resolveTelegramUpdateOffsetPath(params.accountId, params.env);
   const dir = path.dirname(filePath);
-  await fs.mkdir(dir, { recursive: true, mode: 0o700 });
+  await fs.mkdir(dir, { recursive: true }).catch(() => {});
   const tmp = path.join(dir, `${path.basename(filePath)}.${crypto.randomUUID()}.tmp`);
   const payload: TelegramUpdateOffsetState = {
     version: STORE_VERSION,
@@ -77,7 +77,7 @@ export async function writeTelegramUpdateOffset(params: {
   await fs.writeFile(tmp, `${JSON.stringify(payload, null, 2)}\n`, {
     encoding: "utf-8",
   });
-  await fs.chmod(tmp, 0o600);
+  await fs.chmod(tmp, 0o600).catch(() => {}); // best-effort (GCS FUSE doesn't support chmod)
   await fs.rename(tmp, filePath);
 }
 
