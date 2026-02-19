@@ -15,6 +15,32 @@ echo "[entrypoint] State dir: $OPENCLAW_DIR"
 # Ensure directories exist
 mkdir -p "$OPENCLAW_DIR" "$WORKSPACE_DIR"
 
+# --- Persistent tool directories (survive Cloud Run scale-to-zero) ---
+# Cloud Run destroys the container on idle; only the GCS FUSE mount persists.
+# Point package managers at GCS-backed dirs so skill binaries survive restarts.
+TOOLS_DIR="$OPENCLAW_DIR/tools"
+TOOLS_BIN_DIR="$TOOLS_DIR/bin"
+PY_PKG_DIR="$TOOLS_DIR/python-packages"
+mkdir -p "$TOOLS_BIN_DIR" "$TOOLS_DIR/uv" "$TOOLS_DIR/npm" "$PY_PKG_DIR"
+
+export UV_TOOL_DIR="$TOOLS_DIR/uv"
+export UV_TOOL_BIN_DIR="$TOOLS_BIN_DIR"
+export NPM_CONFIG_PREFIX="$TOOLS_DIR/npm"
+export PIP_TARGET="$PY_PKG_DIR"
+export PYTHONPATH="${PY_PKG_DIR}${PYTHONPATH:+:$PYTHONPATH}"
+export PATH="$TOOLS_BIN_DIR:$TOOLS_DIR/npm/bin:$PY_PKG_DIR/bin:$PATH"
+
+echo "[entrypoint] Tool dirs: uv=$UV_TOOL_DIR, npm=$NPM_CONFIG_PREFIX, pip=$PY_PKG_DIR, bin=$TOOLS_BIN_DIR"
+
+# --- Restore apt snapshot (system packages installed at runtime) ---
+APT_SNAPSHOT="$OPENCLAW_DIR/pkg-cache/apt-snapshot.tar.gz"
+if [ -f "$APT_SNAPSHOT" ]; then
+  echo "[entrypoint] Restoring apt package snapshot..."
+  tar xzf "$APT_SNAPSHOT" -C / 2>/dev/null || echo "[entrypoint] Warning: apt snapshot restore failed"
+  ldconfig 2>/dev/null || true
+  echo "[entrypoint] Apt snapshot restored"
+fi
+
 # Symlink ~/.openclaw → state dir so OpenClaw finds its config
 HOME_OPENCLAW="/home/node/.openclaw"
 if [ "$OPENCLAW_DIR" != "$HOME_OPENCLAW" ]; then
