@@ -15,6 +15,16 @@ echo "[entrypoint] State dir: $OPENCLAW_DIR"
 # Ensure directories exist
 mkdir -p "$OPENCLAW_DIR" "$WORKSPACE_DIR"
 
+# --- Clean stale session locks ---
+# GCS FUSE doesn't release locks on process exit. On a fresh container start,
+# any .lock files are guaranteed stale (from a previous crashed instance).
+STALE_LOCKS=$(find "$OPENCLAW_DIR" -name "*.lock" -type f 2>/dev/null)
+if [ -n "$STALE_LOCKS" ]; then
+  echo "[entrypoint] Cleaning stale lock files..."
+  echo "$STALE_LOCKS" | while read -r f; do rm -f "$f" && echo "  removed: $f"; done
+  echo "[entrypoint] Stale locks cleaned"
+fi
+
 # --- Persistent tool directories (survive Cloud Run scale-to-zero) ---
 # Cloud Run destroys the container on idle; only the GCS FUSE mount persists.
 # Point package managers at GCS-backed dirs so skill binaries survive restarts.
