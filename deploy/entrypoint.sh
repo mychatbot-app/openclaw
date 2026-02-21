@@ -91,7 +91,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
   cat > "$CONFIG_FILE" << JSONEOF
 {
   "gateway": {
-    "bind": "lan",
+    "bind": "0.0.0.0",
     "auth": {
       "mode": "token",
       "token": "$OPENCLAW_GATEWAY_TOKEN"
