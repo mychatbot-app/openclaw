@@ -98,7 +98,8 @@ if [ ! -f "$CONFIG_FILE" ]; then
     },
     "controlUi": {
       "allowedOrigins": ["$MCB_CORS_ORIGIN"],
-      "allowInsecureAuth": true
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
     },
     "http": {
       "endpoints": {
@@ -223,6 +224,8 @@ if (!cfg.gateway.http.endpoints.chatCompletions) cfg.gateway.http.endpoints.chat
 cfg.gateway.http.endpoints.chatCompletions.enabled = true;
 if (!cfg.gateway.controlUi) cfg.gateway.controlUi = {};
 cfg.gateway.controlUi.allowInsecureAuth = true;
+// MyChatBot: internal-only deployment behind API proxy; disable device pairing.
+cfg.gateway.controlUi.dangerouslyDisableDeviceAuth = true;
 fs.writeFileSync('$CONFIG_FILE', JSON.stringify(cfg, null, 2));
 console.log('[entrypoint] Updated token, chatCompletions, and allowInsecureAuth');
 " || echo "[entrypoint] Warning: failed to update config"
