@@ -119,7 +119,9 @@ if [ ! -f "$CONFIG_FILE" ]; then
       {
         "id": "main",
         "identity": {
-          "name": "Agent"
+          "avatar": "https://app.mychatbot.app/avatars/female-1.png",
+          "avatarUrl": "https://app.mychatbot.app/avatars/female-1.png",
+          "name": "Veronika"
         }
       }
     ]
