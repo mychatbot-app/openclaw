@@ -56,6 +56,13 @@ ENV PATH="/root/.bun/bin:${PATH}"
 
 RUN corepack enable
 
+# Install uv (Python package manager) for fast Python tooling where needed
+# https://github.com/astral-sh/uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+  && ln -sf /root/.local/bin/uv /usr/local/bin/uv \
+  && ln -sf /root/.local/bin/uvx /usr/local/bin/uvx \
+  && uv --version
+
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
