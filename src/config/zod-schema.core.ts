@@ -301,7 +301,13 @@ export const IdentitySchema = z
     name: z.string().optional(),
     theme: z.string().optional(),
     emoji: z.string().optional(),
+    /** Avatar image: workspace-relative path, http(s) URL, or data URI. */
     avatar: z.string().optional(),
+    /**
+     * Alias for `avatar` used by some UIs/protocols.
+     * Note: config parsing keeps it as-is; consumers may prefer `avatar`.
+     */
+    avatarUrl: z.string().optional(),
   })
   .strict()
   .optional();
