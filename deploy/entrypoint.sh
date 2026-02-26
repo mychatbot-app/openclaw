@@ -99,8 +99,10 @@ if [ ! -f "$CONFIG_FILE" ]; then
     "controlUi": {
       "allowedOrigins": ["$MCB_CORS_ORIGIN"],
       "allowInsecureAuth": true,
-      "dangerouslyDisableDeviceAuth": true
+      "dangerouslyDisableDeviceAuth": true,
+      "dangerouslyAllowHostHeaderOriginFallback": true
     },
+    "trustedProxies": ["169.254.0.0/16", "10.0.0.0/8"],
     "http": {
       "endpoints": {
         "chatCompletions": {
@@ -228,6 +230,11 @@ if (!cfg.gateway.controlUi) cfg.gateway.controlUi = {};
 cfg.gateway.controlUi.allowInsecureAuth = true;
 // MyChatBot: internal-only deployment behind API proxy; disable device pairing.
 cfg.gateway.controlUi.dangerouslyDisableDeviceAuth = true;
+// Allow Host-header origin fallback so the BE (api.mychatbot.app) can connect
+// with Origin matching the Cloud Run service URL without knowing it at config time.
+cfg.gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback = true;
+// Trust Cloud Run's load balancer proxy IPs for proper remote-IP detection.
+if (!cfg.gateway.trustedProxies) cfg.gateway.trustedProxies = ['169.254.0.0/16', '10.0.0.0/8'];
 fs.writeFileSync('$CONFIG_FILE', JSON.stringify(cfg, null, 2));
 console.log('[entrypoint] Updated token, chatCompletions, and allowInsecureAuth');
 " || echo "[entrypoint] Warning: failed to update config"
