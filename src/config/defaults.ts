@@ -418,6 +418,58 @@ export function applyAgentDefaults(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
+export function applyMemorySearchDefaults(cfg: OpenClawConfig): OpenClawConfig {
+  const defaults = cfg.agents?.defaults;
+  if (!defaults) {
+    return cfg;
+  }
+
+  const memorySearch = defaults.memorySearch ?? {};
+  const experimental = memorySearch.experimental ?? {};
+
+  let mutated = false;
+  const nextDefaults = { ...defaults };
+  const nextMemorySearch = { ...memorySearch };
+
+  if (memorySearch.sources === undefined) {
+    nextMemorySearch.sources = ["memory", "sessions"];
+    mutated = true;
+  }
+
+  if (experimental.sessionMemory === undefined) {
+    nextMemorySearch.experimental = { ...experimental, sessionMemory: true };
+    mutated = true;
+  }
+
+  // Default-enable session memory flush (compaction → memory flush) unless explicitly disabled.
+  const compaction = defaults.compaction ?? {};
+  const memoryFlush = compaction.memoryFlush ?? {};
+  if (memoryFlush.enabled === undefined) {
+    nextDefaults.compaction = {
+      ...compaction,
+      memoryFlush: {
+        ...memoryFlush,
+        enabled: true,
+      },
+    };
+    mutated = true;
+  }
+
+  if (!mutated) {
+    return cfg;
+  }
+
+  nextDefaults.memorySearch = nextMemorySearch;
+
+  return {
+    ...cfg,
+    agents: {
+      ...cfg.agents,
+      defaults: nextDefaults,
+    },
+  };
+}
+
 export function applyLoggingDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const logging = cfg.logging;
   if (!logging) {
