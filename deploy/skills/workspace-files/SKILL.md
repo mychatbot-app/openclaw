@@ -74,7 +74,9 @@ Images (png, jpg, gif, webp, svg), documents (pdf, doc, docx, xls, xlsx, csv, tx
 
 ## Tips
 
+- **ALWAYS copy the URL exactly from the `curl` response** — never retype or reconstruct URLs manually. The response JSON `url` field is the canonical link.
 - Use descriptive filenames — the URL includes the filename and users see it
 - For files larger than 50 MB, suggest the user download directly from the workspace or split the file
 - When sharing multiple files, upload them in parallel for speed
 - Always include the file URL in your response text so the user can click it
+- HTML files will render as an inline preview in the chat automatically
