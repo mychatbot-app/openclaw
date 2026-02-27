@@ -57,8 +57,9 @@ Maintain a JSON mapping file at `workspace/.file_uploads.json` to track uploaded
 
 1. **Before uploading**, read `.file_uploads.json` and check if the file path already has an entry.
 2. **If an entry exists**, compare the current file size with the stored `size`. If they match, reuse the existing `url` — do not re-upload.
-3. **If the file is new or the size changed**, upload it and update the mapping with the new `url`, `size`, and `uploaded_at`.
-4. **After every upload**, write the updated mapping back to `.file_uploads.json`.
+3. **If the file is new or the size changed**, upload it **with a different filename** (e.g. append a short timestamp or version suffix like `report_v2.pdf` or `animation_1709048400.html`). The CDN caches files by URL for 24 hours — uploading to the same name will serve the stale version.
+4. Update the mapping with the new `url`, `size`, and `uploaded_at`.
+5. **After every upload**, write the updated mapping back to `.file_uploads.json`.
 
 ## Workflow
 
