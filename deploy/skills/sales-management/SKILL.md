@@ -1,6 +1,6 @@
 ---
 name: sales-management
-description: Manage MyChatBot sales agents, clients, chats, integrations, and follow-ups. Use when the user asks about their sales bots, leads, conversations, or wants to review account status.
+description: Comprehensive management of MyChatBot sales platform — agents, clients, chats, pipelines, integrations, outreach, and more. Use when the user asks about their sales bots, leads, conversations, orders, or wants to configure the system.
 metadata:
   openclaw:
     emoji: "📊"
@@ -10,7 +10,7 @@ metadata:
 
 # Sales Management
 
-Manage your MyChatBot sales agents and CRM data via the MyChatBot API.
+Comprehensive management of your MyChatBot sales agents, CRM, and automation platform via MCP.
 
 ## MCP Server
 
@@ -22,28 +22,87 @@ ${MCB_MCP_URL}
 
 **Account ID:** `${MCB_ACCOUNT_ID}`
 
-## Available Tools
+## Available Tools (56)
 
 ### Account Overview
-- `get_account_summary` — High-level stats: total assistants, clients, chats, integrations, follow-ups
+- `get_account_summary` — High-level stats: total assistants, clients, chats, integrations, follow-ups, pipelines, orders
+- `get_subscription_info` — Current plan, tokens left, expiration date
 
 ### Assistants (Sales Bots)
-- `list_assistants` — List all active sales bots with name, status, language, model
-- `get_assistant(assistant_id)` — Detailed info: instructions, welcome message, integrations, follow-ups config
+- `list_assistants` — List all active bots with name, status, language, model
+- `get_assistant(assistant_id)` — Full detail: instructions, welcome message, integrations, skills, metadata
+- `assistant_create(bot_name, instructions?, welcome_message?, language?)` — Create new assistant
+- `assistant_update(assistant_id, bot_name?, welcome_message?, language?, status?, model?)` — Update fields
+- `assistant_update_instructions(assistant_id, instructions)` — Update system prompt (with moderation)
+- `assistant_list_skills(assistant_id)` — List skills with name, description, is_always_active
+- `assistant_create_skill(assistant_id, name, description?, instructions?, is_always_active?)` — Create skill
+- `assistant_update_skill(skill_id, name?, description?, instructions?, is_always_active?)` — Update skill
+- `assistant_delete_skill(skill_id)` — Delete skill
+- `assistant_get_config_link(assistant_id)` — Web UI link to configure assistant
 
 ### Clients (Leads/Customers)
-- `list_clients(funnel_status?, limit?, offset?)` — Browse clients, filter by funnel status
-- `get_client(client_id)` — Full client details: contact info, funnel status, labels, company
+- `list_clients(funnel_status?, labels?, search?, pipeline_id?, has_phone_number?, has_email?, order_by?, limit?, offset?)` — Rich search/filter
+- `get_client(client_id)` — Full client record with contact info, labels, metadata
+- `client_create(full_name, email?, phone_number?, company_name?, funnel_status?, labels?, pipeline_id?)` — Create lead
+- `client_update(client_id, full_name?, email?, phone_number?, company_name?, funnel_status?, labels?, manager_id?)` — Update client
+- `client_delete(client_id)` — Delete client and associated chats
+- `client_list_notes(client_id, limit?, offset?)` — List notes
+- `client_create_note(client_id, content)` — Add note
+- `client_delete_note(client_id, note_id)` — Remove note
+- `client_list_tasks(client_id, limit?, offset?)` — List tasks
+- `client_create_task(client_id, title, description?, priority?, due_date?)` — Create task
+- `client_update_task(client_id, task_id, title?, description?, status?, priority?)` — Update task
+- `client_delete_task(client_id, task_id)` — Delete task
+- `client_list_attachments(client_id, limit?, offset?)` — List file attachments
 
-### Chats
-- `list_chats(assistant_id?, needs_operator?, limit?)` — Recent conversations, filter by bot or operator-needed
-- Chats show: client name, channel (telegram/whatsapp/instagram/etc), last active, unread count
+### Chats (Conversations)
+- `list_chats(assistant_id?, needs_operator?, client_id?, limit?)` — Recent conversations
+- `get_chat(chat_id)` — Chat details with metadata, follow-up state
+- `get_chat_messages(chat_id, limit?)` — Read message history (last N messages from MongoDB)
 
 ### Integrations
-- `list_integrations` — All connected channels, MCPs, and knowledge bases
+- `list_integrations(type?)` — All integrations: CRMs, knowledge bases, MCPs (secrets stripped)
+- `get_integration(integration_id)` — Detailed config (secrets stripped)
+- `get_integration_config_link(integration_id)` — Web UI link
 
-### Follow-ups
-- `list_follow_ups` — Automated follow-up sequences: name, type, status, schedule, targeting
+### Follow-ups (Outreach Automations)
+- `list_follow_ups(type?, status?)` — All automations with targeting info
+- `get_follow_up(follow_up_id)` — Full detail with steps and filters
+- `follow_up_create(name, target_status_name?, target_labels?)` — Create postponed follow-up (draft)
+- `follow_up_update(follow_up_id, name?, status?, target_status_name?, target_labels?)` — Update
+- `follow_up_delete(follow_up_id)` — Delete
+
+### Pipelines & Funnel Statuses
+- `list_pipelines` — All pipelines
+- `get_pipeline(pipeline_id)` — Pipeline + its funnel statuses
+- `pipeline_create(name, description?)` — Create pipeline
+- `pipeline_update(pipeline_id, name?, description?)` — Update pipeline
+- `pipeline_delete(pipeline_id)` — Delete (with safety checks)
+- `funnel_status_create(pipeline_id, status_name, color_index?)` — Add stage
+- `funnel_status_delete(pipeline_id, status_name)` — Remove stage
+
+### Channels
+- `list_channels(assistant_id?)` — All channels with type, status (credentials stripped)
+- `channel_toggle(assistant_id, page_id, communication_channel, is_on)` — Enable/disable
+- `channel_get_config_link(assistant_id, channel_type)` — Web UI link (channels need manual auth setup)
+
+### Orders
+- `list_orders(since_date?, to_date?, client_id?, limit?, offset?)` — Order records
+- `get_order_stats(since_date?, to_date?)` — Total count, revenue, by-channel breakdown
+
+### Labels
+- `list_labels` — All labels/tags
+- `label_create(label_name)` — Create label
+- `label_delete(label_name)` — Delete label
+
+### Test Chat
+- `test_chat_start(assistant_id)` — Start test session (clears previous history), uses live instructions
+- `test_chat_send(assistant_id, message)` — Send message, get AI response (synchronous)
+- `test_chat_end(assistant_id)` — End session and clear chat history
+
+### Usage Statistics
+- `get_token_usage(since_date?, to_date?, assistant_id?)` — Token breakdown by model and assistant
+- `get_usage_summary(since_date?, to_date?)` — Combined: tokens, orders, chats, clients for period
 
 ## How to Call Tools
 
@@ -68,7 +127,12 @@ curl -s -X POST "${MCB_MCP_URL}" \
 
 ## Workflow Tips
 
-1. **Start with summary**: Always begin with `get_account_summary` to understand the account
-2. **Drill down**: List assistants → pick one → get details → list its chats
-3. **Find issues**: Check `list_chats(needs_operator=true)` for conversations needing human help
-4. **Client lookup**: Use `list_clients` to find leads, filter by `funnel_status` for pipeline views
+1. **Start with summary**: `get_account_summary` → understand the account landscape
+2. **Agent deep dive**: `list_assistants` → `get_assistant` → review instructions → `assistant_update_instructions` to modify
+3. **Test changes**: `test_chat_start` → `test_chat_send` (multiple rounds) → `test_chat_end` to verify behavior
+4. **Client management**: `list_clients(search="...")` → `get_client` → `client_create_note` / `client_update`
+5. **Pipeline setup**: `list_pipelines` → `get_pipeline` → `funnel_status_create` to add stages
+6. **Outreach**: `follow_up_create` → `follow_up_update(status="active")` to launch
+7. **Chat review**: `list_chats(needs_operator=true)` → `get_chat_messages` to read conversation
+8. **Channel setup**: `list_channels` → `channel_get_config_link` → user configures in browser → `channel_toggle(is_on=true)`
+9. **Analytics**: `get_usage_summary` → `get_token_usage` → `get_order_stats`
