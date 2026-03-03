@@ -22,7 +22,7 @@ ${MCB_MCP_URL}
 
 **Account ID:** `${MCB_ACCOUNT_ID}`
 
-## Available Tools (56)
+## Available Tools (60)
 
 ### Account Overview
 - `get_account_summary` — High-level stats: total assistants, clients, chats, integrations, follow-ups, pipelines, orders
@@ -100,6 +100,12 @@ ${MCB_MCP_URL}
 - `test_chat_send(assistant_id, message)` — Send message, get AI response (synchronous)
 - `test_chat_end(assistant_id)` — End session and clear chat history
 
+### Knowledge Base (FAQ)
+- `create_faq_knowledge_base(knowledge_base, name, language?, entries?)` — Create FAQ KB integration, optionally seed with entries (id, question, answer)
+- `list_faq_knowledge_base_entries(integration_id)` — List all FAQ entries with IDs, questions, answers
+- `update_faq_knowledge_base_entries(integration_id, add?, update?, remove?)` — Granular add/update/remove operations on FAQ entries
+- `delete_faq_knowledge_base(integration_id)` — Delete FAQ KB and all indexed data (irreversible)
+
 ### Usage Statistics
 - `get_token_usage(since_date?, to_date?, assistant_id?)` — Token breakdown by model and assistant
 - `get_usage_summary(since_date?, to_date?)` — Combined: tokens, orders, chats, clients for period
@@ -136,3 +142,4 @@ curl -s -X POST "${MCB_MCP_URL}" \
 7. **Chat review**: `list_chats(needs_operator=true)` → `get_chat_messages` to read conversation
 8. **Channel setup**: `list_channels` → `channel_get_config_link` → user configures in browser → `channel_toggle(is_on=true)`
 9. **Analytics**: `get_usage_summary` → `get_token_usage` → `get_order_stats`
+10. **Knowledge base**: `create_faq_knowledge_base` (seed entries) → `list_faq_knowledge_base_entries` → `update_faq_knowledge_base_entries` to maintain
