@@ -116,7 +116,6 @@ if [ ! -f "$CONFIG_FILE" ]; then
       "model": {
         "primary": "openrouter/anthropic/claude-sonnet-4.6"
       },
-      "thinking": "medium"
     },
     "list": [
       {
@@ -236,10 +235,7 @@ cfg.gateway.controlUi.dangerouslyDisableDeviceAuth = true;
 cfg.gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback = true;
 // Trust Cloud Run's load balancer proxy IPs for proper remote-IP detection.
 if (!cfg.gateway.trustedProxies) cfg.gateway.trustedProxies = ['169.254.0.0/16', '10.0.0.0/8'];
-// Enable thinking/reasoning by default
-if (!cfg.agents) cfg.agents = {};
-if (!cfg.agents.defaults) cfg.agents.defaults = {};
-if (!cfg.agents.defaults.thinking) cfg.agents.defaults.thinking = 'medium';
+
 fs.writeFileSync('$CONFIG_FILE', JSON.stringify(cfg, null, 2));
 console.log('[entrypoint] Updated token, chatCompletions, and allowInsecureAuth');
 " || echo "[entrypoint] Warning: failed to update config"
