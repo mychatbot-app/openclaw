@@ -257,6 +257,10 @@ console.log('[entrypoint] Updated OpenRouter key in auth-profiles');
   fi
 fi
 
+# Fix any invalid/unknown config keys left by previous versions
+echo "[entrypoint] Running doctor --fix to clean config..."
+node openclaw.mjs doctor --fix 2>&1 || echo "[entrypoint] Warning: doctor --fix failed (non-fatal)"
+
 echo "[entrypoint] Starting OpenClaw gateway..."
 
 # Cloud Run sets PORT env var (usually 8080). OpenClaw uses OPENCLAW_GATEWAY_PORT.
