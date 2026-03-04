@@ -22,7 +22,7 @@ ${MCB_MCP_URL}
 
 **Account ID:** `${MCB_ACCOUNT_ID}`
 
-## Available Tools (60)
+## Available Tools (66)
 
 ### Account Overview
 - `get_account_summary` — High-level stats: total assistants, clients, chats, integrations, follow-ups, pipelines, orders
@@ -39,6 +39,7 @@ ${MCB_MCP_URL}
 - `assistant_update_skill(skill_id, name?, description?, instructions?, is_always_active?)` — Update skill
 - `assistant_delete_skill(skill_id)` — Delete skill
 - `assistant_get_config_link(assistant_id)` — Web UI link to configure assistant
+- `get_assistant_available_tools(assistant_id)` — List all execution tools available to this assistant (based on integrations, knowledge bases, feature toggles). Use when writing instructions to reference correct tool names.
 
 ### Clients (Leads/Customers)
 - `list_clients(funnel_status?, labels?, search?, pipeline_id?, has_phone_number?, has_email?, order_by?, limit?, offset?)` — Rich search/filter
@@ -106,6 +107,15 @@ ${MCB_MCP_URL}
 - `update_faq_knowledge_base_entries(integration_id, add?, update?, remove?)` — Granular add/update/remove operations on FAQ entries
 - `delete_faq_knowledge_base(integration_id)` — Delete FAQ KB and all indexed data (irreversible)
 
+### Knowledge Base (Products)
+- `create_products_integration(knowledge_base, name, language?, products?)` — Create manually-managed product catalog, optionally seed with products (arbitrary attributes; `name` is the primary field)
+- `list_products(integration_id)` — List all products with their attributes
+- `update_products(integration_id, add?, update?, remove?)` — Granular add/update/remove operations on products
+- `delete_products_integration(integration_id)` — Delete Products catalog and all indexed data (irreversible)
+
+### Knowledge Base (Product Feed)
+- `create_product_feed_integration(knowledge_base, feed_url, language, name?, index_images?)` — Create Product Feed from URL (JSON/XML/YML/Google Shopping). Async processing — use `get_integration(integration_id)` to check status.
+
 ### Usage Statistics
 - `get_token_usage(since_date?, to_date?, assistant_id?)` — Token breakdown by model and assistant
 - `get_usage_summary(since_date?, to_date?)` — Combined: tokens, orders, chats, clients for period
@@ -142,4 +152,6 @@ curl -s -X POST "${MCB_MCP_URL}" \
 7. **Chat review**: `list_chats(needs_operator=true)` → `get_chat_messages` to read conversation
 8. **Channel setup**: `list_channels` → `channel_get_config_link` → user configures in browser → `channel_toggle(is_on=true)`
 9. **Analytics**: `get_usage_summary` → `get_token_usage` → `get_order_stats`
-10. **Knowledge base**: `create_faq_knowledge_base` (seed entries) → `list_faq_knowledge_base_entries` → `update_faq_knowledge_base_entries` to maintain
+10. **Knowledge base (FAQ)**: `create_faq_knowledge_base` (seed entries) → `list_faq_knowledge_base_entries` → `update_faq_knowledge_base_entries` to maintain
+11. **Knowledge base (Product Feed)**: `create_product_feed_integration` with feed URL → `get_integration(integration_id)` to check indexing status
+12. **Knowledge base (Products)**: `create_products_integration` (seed products) → `list_products` → `update_products` to maintain catalog
