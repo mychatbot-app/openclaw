@@ -219,6 +219,7 @@ else
 const fs = require('fs');
 const cfg = JSON.parse(fs.readFileSync('$CONFIG_FILE', 'utf8'));
 if (!cfg.gateway) cfg.gateway = {};
+cfg.gateway.mode = 'local';
 if (!cfg.gateway.auth) cfg.gateway.auth = {};
 cfg.gateway.auth.mode = 'token';
 cfg.gateway.auth.token = '$OPENCLAW_GATEWAY_TOKEN';
