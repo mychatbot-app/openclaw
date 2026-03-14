@@ -258,8 +258,9 @@ console.log('[entrypoint] Updated OpenRouter key in auth-profiles');
 fi
 
 # Fix any invalid/unknown config keys left by previous versions
+# Timeout after 30s to prevent blocking container startup
 echo "[entrypoint] Running doctor --fix to clean config..."
-node openclaw.mjs doctor --fix 2>&1 || echo "[entrypoint] Warning: doctor --fix failed (non-fatal)"
+timeout 30 node openclaw.mjs doctor --fix 2>&1 || echo "[entrypoint] Warning: doctor --fix failed or timed out (non-fatal)"
 
 echo "[entrypoint] Starting OpenClaw gateway..."
 
