@@ -257,10 +257,8 @@ console.log('[entrypoint] Updated OpenRouter key in auth-profiles');
   fi
 fi
 
-# Fix any invalid/unknown config keys left by previous versions
-# Timeout after 30s to prevent blocking container startup
-echo "[entrypoint] Running doctor --fix to clean config..."
-timeout 30 node openclaw.mjs doctor --fix 2>&1 || echo "[entrypoint] Warning: doctor --fix failed or timed out (non-fatal)"
+# NOTE: doctor --fix removed — it hangs on upstream 2026.3.x in Cloud Run (interactive TTY detection?)
+# Config cleaning is handled manually when needed.
 
 echo "[entrypoint] Starting OpenClaw gateway..."
 
