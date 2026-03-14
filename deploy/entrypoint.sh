@@ -255,6 +255,27 @@ fs.writeFileSync('$AUTH_FILE', JSON.stringify(d, null, 2));
 console.log('[entrypoint] Updated OpenRouter key in auth-profiles');
 " || echo "[entrypoint] Warning: failed to update auth-profiles"
   fi
+
+  # --- Sync new bundled skills (image update scenario) ---
+  # On updates, new skills may be bundled in /opt/openclaw-skills/.
+  # Copy only skills that DON'T already exist in workspace (preserves user customizations).
+  SKILLS_DIR="$WORKSPACE_DIR/skills"
+  if [ -d "/opt/openclaw-skills" ]; then
+    for skill_dir in /opt/openclaw-skills/*/; do
+      skill_name=$(basename "$skill_dir")
+      target_dir="$SKILLS_DIR/$skill_name"
+      if [ ! -d "$target_dir" ]; then
+        echo "[entrypoint] New skill detected: $skill_name — installing to workspace"
+        mkdir -p "$target_dir"
+        for f in "$skill_dir"*; do
+          [ -f "$f" ] || continue
+          MCB_MCP_URL="${MCB_MCP_BASE_URL:-https://api.mychatbot.app}/api/mcp/sales-management?account_id=${MCB_ACCOUNT_ID:-unknown}"
+          sed "s|\${MCB_ACCOUNT_ID}|${MCB_ACCOUNT_ID:-unknown}|g; s|\${MCB_MCP_URL}|${MCB_MCP_URL}|g" "$f" > "$target_dir/$(basename "$f")"
+        done
+        echo "[entrypoint] Installed new skill: $skill_name"
+      fi
+    done
+  fi
 fi
 
 # NOTE: doctor --fix removed — it hangs on upstream 2026.3.x in Cloud Run (interactive TTY detection?)
