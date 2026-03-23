@@ -243,18 +243,22 @@ console.log('[entrypoint] Updated token, chatCompletions, and allowInsecureAuth'
   fi
 
   # Always update auth-profiles with API keys from env (in case keys rotated)
-  AGENT_DIR="$OPENCLAW_DIR/agents/main/agent"
-  mkdir -p "$AGENT_DIR"
-  AUTH_FILE="$AGENT_DIR/auth-profiles.json"
-  if [ -n "${OPENROUTER_API_KEY:-}" ] && [ -f "$AUTH_FILE" ]; then
-    node -e "
+  # Sync to ALL agents, not just main, so sub-agents don't get stale keys.
+  if [ -n "${OPENROUTER_API_KEY:-}" ]; then
+    for AGENT_DIR in "$OPENCLAW_DIR"/agents/*/agent; do
+      [ -d "$AGENT_DIR" ] || continue
+      AUTH_FILE="$AGENT_DIR/auth-profiles.json"
+      [ -f "$AUTH_FILE" ] || continue
+      AGENT_NAME=$(basename "$(dirname "$AGENT_DIR")")
+      node -e "
 const fs = require('fs');
 const d = JSON.parse(fs.readFileSync('$AUTH_FILE','utf8'));
 d.profiles['openrouter:default'] = {provider:'openrouter',type:'api_key',key:'${OPENROUTER_API_KEY}'};
 d.lastGood['openrouter'] = 'openrouter:default';
 fs.writeFileSync('$AUTH_FILE', JSON.stringify(d, null, 2));
-console.log('[entrypoint] Updated OpenRouter key in auth-profiles');
-" || echo "[entrypoint] Warning: failed to update auth-profiles"
+console.log('[entrypoint] Updated OpenRouter key in auth-profiles for agent: $AGENT_NAME');
+" || echo "[entrypoint] Warning: failed to update auth-profiles for $AGENT_NAME"
+    done
   fi
 
   # --- Sync new bundled skills (image update scenario) ---
